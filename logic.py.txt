@@ -1,0 +1,31 @@
+import pandas_ta as ta
+
+def get_signals(df):
+    # Calculate RSI (Relative Strength Index)
+    df['RSI'] = ta.rsi(df['Close'], length=14)
+    
+    # Calculate EMAs (Exponential Moving Averages)
+    df['EMA_20'] = ta.ema(df['Close'], length=20)
+    df['EMA_50'] = ta.ema(df['Close'], length=50)
+    
+    # Logic: Golden Cross (Trend signal)
+    # When 20 EMA crosses above 50 EMA, it's a bullish sign.
+    df['Signal'] = 0
+    df.loc[df['EMA_20'] > df['EMA_50'], 'Signal'] = 1
+    
+    return df
+
+def get_recommendation(df):
+    last_row = df.iloc[-1]
+    rsi = last_row['RSI']
+    close = last_row['Close']
+    ema20 = last_row['EMA_20']
+
+    if rsi < 30:
+        return "STRONG BUY", "Oversold conditions detected. Price likely to bounce."
+    elif rsi > 70:
+        return "STRONG SELL", "Overbought conditions. High risk of price drop."
+    elif close > ema20:
+        return "HOLD / BUY", "Price is maintaining an upward trend."
+    else:
+        return "NEUTRAL", "No clear trend. Market is sideways."
